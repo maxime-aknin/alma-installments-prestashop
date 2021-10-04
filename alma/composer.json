@@ -25,5 +25,8 @@
             "email": "olivier.lance@getalma.eu"
         }
     ],
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "require-dev": {
+        "pestphp/pest": "1.x-dev"
+    }
 }
