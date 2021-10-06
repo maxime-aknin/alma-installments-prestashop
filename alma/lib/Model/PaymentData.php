@@ -40,6 +40,25 @@ use Validate;
 
 class PaymentData
 {
+    public static function eligibilityDataFrom($feePlans, $purchaseAmount)
+    {
+        $queries = [];
+        foreach ($feePlans as $plan) {
+            $queries[] = [
+                'purchase_amount' => almaPriceToCents($purchaseAmount),
+                'installments_count' => $plan['installmentsCount'],
+                'deferred_days' => $plan['deferredDays'],
+                'deferred_months' => $plan['deferredMonths'],
+            ];
+        }
+
+        return [
+            'purchase_amount' => almaPriceToCents($purchaseAmount),
+            'queries' => $queries,
+        ];
+
+    }
+
     /**
      * @param Cart $cart
      * @param Context $context
@@ -77,19 +96,7 @@ class PaymentData
 
         /* Eligibility Endpoint V2 */
         if (!$forPayment) {
-            $queries = [];
-            foreach ($feePlans as $plan) {
-                $queries[] = [
-                    'purchase_amount' => almaPriceToCents($purchaseAmount),
-                    'installments_count' => $plan['installmentsCount'],
-                    'deferred_days' => $plan['deferredDays'],
-                    'deferred_months' => $plan['deferredMonths'],
-            ];
-            }
-
-            return [
-                'purchase_amount' => almaPriceToCents($purchaseAmount),
-                'queries' => $queries, ];
+            return self::eligibilityDataFrom($feePlans, $purchaseAmount);
         }
 
         if (!$customer) {
