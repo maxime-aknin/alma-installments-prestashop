@@ -209,6 +209,9 @@ final class GetContentHookController extends AdminHookController
             $displayOrderConfirmation = (bool) Tools::getValue('ALMA_DISPLAY_ORDER_CONFIRMATION_ON');
             Settings::updateValue('ALMA_DISPLAY_ORDER_CONFIRMATION', $displayOrderConfirmation);
 
+            $activateFragment = (bool) Tools::getValue('ALMA_ACTIVATE_FRAGMENT_ON');
+            Settings::updateValue('ALMA_ACTIVATE_FRAGMENT', $activateFragment);
+
             $activateLogging = (bool) Tools::getValue('ALMA_ACTIVATE_LOGGING_ON');
             Settings::updateValue('ALMA_ACTIVATE_LOGGING', $activateLogging);
 
@@ -1040,6 +1043,39 @@ final class GetContentHookController extends AdminHookController
             ],
         ];
 
+        $fragmentForm = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->module->l('In-page checkout', 'GetContentHookController'),
+                    'image' => $iconPath,
+                ],
+                'input' => [
+                    [
+                        'name' => 'ALMA_ACTIVATE_FRAGMENT',
+                        'label' => $this->module->l('Activate in-page checkout', 'GetContentHookController'),
+                        // PrestaShop won't detect the string if the call to `l` is multiline
+                        // phpcs:ignore
+                        'desc' => $this->module->l('Activate this setting if you want a in-page checkout', 'GetContentHookController'),
+                        'type' => 'checkbox',
+                        'values' => [
+                            'id' => 'id',
+                            'name' => 'label',
+                            'query' => [
+                                [
+                                    'id' => 'ON',
+                                    'val' => true,
+                                    // PrestaShop won't detect the string if the call to `l` is multiline
+                                    // phpcs:ignore
+                                    'label' => $this->module->l('The checkout in-page in your own website', 'GetContentHookController'),
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'submit' => ['title' => $this->module->l('Save'), 'class' => 'button btn btn-default pull-right'],
+            ],
+        ];
+
         // Exclusion
         $tpl = $this->context->smarty->createTemplate(
             "{$this->module->local_path}views/templates/hook/excludedCategories.tpl"
@@ -1204,6 +1240,7 @@ final class GetContentHookController extends AdminHookController
                 $excludedForm,
                 $refundStateForm,
                 $orderConfirmationForm,
+                $fragmentForm,
                 $apiConfigForm,
                 $debugForm,
             ]);
@@ -1242,6 +1279,7 @@ final class GetContentHookController extends AdminHookController
             'ALMA_PRODUCT_WDGT_NOT_ELGBL_ON' => Settings::showProductWidgetIfNotEligible(),
             'ALMA_CATEGORIES_WDGT_NOT_ELGBL_ON' => Settings::showCategoriesWidgetIfNotEligible(),
             'ALMA_DISPLAY_ORDER_CONFIRMATION_ON' => Settings::displayOrderConfirmation(),
+            'ALMA_ACTIVATE_FRAGMENT_ON' => Settings::activateFragment(),
             'ALMA_ACTIVATE_LOGGING_ON' => (bool) Settings::canLog(),
             'ALMA_STATE_REFUND' => Settings::getRefundState(),
             'ALMA_STATE_REFUND_ENABLED_ON' => Settings::isRefundEnabledByState(),
