@@ -207,6 +207,9 @@ final class GetContentHookController extends AdminHookController
             $activateFragment = (bool) Tools::getValue('ALMA_ACTIVATE_FRAGMENT_ON');
             Settings::updateValue('ALMA_ACTIVATE_FRAGMENT', $activateFragment);
 
+            $activateFragment = (bool) Tools::getValue('ALMA_ACTIVATE_FRAGMENT_ON');
+            Settings::updateValue('ALMA_ACTIVATE_FRAGMENT', $activateFragment);
+
             $activateLogging = (bool) Tools::getValue('ALMA_ACTIVATE_LOGGING_ON');
             Settings::updateValue('ALMA_ACTIVATE_LOGGING', $activateLogging);
 
@@ -999,6 +1002,39 @@ final class GetContentHookController extends AdminHookController
                         'size' => 75,
                         'placeholder' => $this->module->l('E.g. #id, .class, ...', 'GetContentHookController'),
                         'required' => false,
+                    ],
+                ],
+                'submit' => ['title' => $this->module->l('Save'), 'class' => 'button btn btn-default pull-right'],
+            ],
+        ];
+
+        $fragmentForm = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->module->l('In-page checkout', 'GetContentHookController'),
+                    'image' => $iconPath,
+                ],
+                'input' => [
+                    [
+                        'name' => 'ALMA_ACTIVATE_FRAGMENT',
+                        'label' => $this->module->l('Activate in-page checkout', 'GetContentHookController'),
+                        // PrestaShop won't detect the string if the call to `l` is multiline
+                        // phpcs:ignore
+                        'desc' => $this->module->l('Activate this setting if you want a in-page checkout', 'GetContentHookController'),
+                        'type' => 'checkbox',
+                        'values' => [
+                            'id' => 'id',
+                            'name' => 'label',
+                            'query' => [
+                                [
+                                    'id' => 'ON',
+                                    'val' => true,
+                                    // PrestaShop won't detect the string if the call to `l` is multiline
+                                    // phpcs:ignore
+                                    'label' => $this->module->l('The checkout in-page in your own website', 'GetContentHookController'),
+                                ],
+                            ],
+                        ],
                     ],
                 ],
                 'submit' => ['title' => $this->module->l('Save'), 'class' => 'button btn btn-default pull-right'],
