@@ -46,6 +46,7 @@ class AdminAlmaRefundsController extends ModuleAdminController
         $order = new Order(Tools::getValue('orderId'));
 
         $orderPayment = $this->getCurrentOrderPayment($order);
+        Logger::instance()->debug("Alma: Refund orderPayment serialize (returned ' . serialize($orderPayment) . ')");
         if (!$orderPayment) {
             $this->ajaxFail(
                 $this->module->l('Error: Could not find Alma transaction', 'AdminAlmaRefunds')
@@ -54,6 +55,7 @@ class AdminAlmaRefundsController extends ModuleAdminController
 
         $paymentId = $orderPayment->transaction_id;
 
+        Logger::instance()->debug("Alma: Refund refundType (returned {$refundType})");
         switch ($refundType) {
             case 'partial_multi':
                 $isTotal = false;
@@ -124,6 +126,8 @@ class AdminAlmaRefundsController extends ModuleAdminController
             'totalOrderAmount' => $totalOrderAmount,
         ];
 
+        Logger::instance()->debug("Alma: Refund Json serialize (returned ' . serialize($json) . ')");
+
         method_exists(get_parent_class($this), 'ajaxDie')
             ? $this->ajaxDie(json_encode($json))
             : die(Tools::jsonEncode($json));
@@ -132,6 +136,7 @@ class AdminAlmaRefundsController extends ModuleAdminController
     private function getCurrentOrderPayment(Order $order)
     {
         $orderPayments = OrderPayment::getByOrderReference($order->reference);
+        Logger::instance()->debug("Alma: Refund getCurrentOrderPayment (returned orderReference: {$order->reference})");
         if ($orderPayments && isset($orderPayments[0])) {
             return $orderPayments[0];
         }
@@ -154,6 +159,8 @@ class AdminAlmaRefundsController extends ModuleAdminController
         if (!$alma) {
             return false;
         }
+        // phpcs:ignore
+        Logger::instance()->debug("Alma: Refund runRefund (returned paymentId: {$paymentId}, amount: {$amount}, isTotal: {$isTotal})");
 
         return $alma->payments->refund($paymentId, $isTotal, almaPriceToCents($amount));
     }
