@@ -71,6 +71,10 @@ class Logger extends AbstractLogger
         ];
 
         $Logger = Logger::loggerClass();
+        if (count($context) > 0) {
+            $context = json_encode($context);
+            $message = $message . ' - ' . $context;
+        }
         $Logger::addLog($message, $levels[$level]);
     }
 }
