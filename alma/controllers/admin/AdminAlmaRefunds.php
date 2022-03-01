@@ -140,7 +140,7 @@ class AdminAlmaRefundsController extends ModuleAdminController
         if ($orderPayments && isset($orderPayments[0])) {
             return $orderPayments[0];
         }
-
+        Logger::instance()->debug("Alma: Refund getCurrentOrderPayment returned orderPayments:", [$orderPayments]);
         return false;
     }
 
