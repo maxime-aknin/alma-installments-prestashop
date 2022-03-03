@@ -46,7 +46,7 @@ class AdminAlmaRefundsController extends ModuleAdminController
         $order = new Order(Tools::getValue('orderId'));
 
         $orderPayment = $this->getCurrentOrderPayment($order);
-        Logger::instance()->debug("Alma: Refund orderPayment", [$orderPayment]);
+        Logger::instance()->debug('Alma: Refund orderPayment', [$orderPayment]);
         if (!$orderPayment) {
             $this->ajaxFail(
                 $this->module->l('Error: Could not find Alma transaction', 'AdminAlmaRefunds')
@@ -126,7 +126,7 @@ class AdminAlmaRefundsController extends ModuleAdminController
             'totalOrderAmount' => $totalOrderAmount,
         ];
 
-        Logger::instance()->debug("Alma: Refund Json", [$json]);
+        Logger::instance()->debug('Alma: Refund Json', [$json]);
 
         method_exists(get_parent_class($this), 'ajaxDie')
             ? $this->ajaxDie(json_encode($json))
@@ -140,7 +140,8 @@ class AdminAlmaRefundsController extends ModuleAdminController
         if ($orderPayments && isset($orderPayments[0])) {
             return $orderPayments[0];
         }
-        Logger::instance()->debug("Alma: Refund getCurrentOrderPayment returned orderPayments:", [$orderPayments]);
+        Logger::instance()->debug('Alma: Refund getCurrentOrderPayment returned orderPayments:', [$orderPayments]);
+
         return false;
     }
 
