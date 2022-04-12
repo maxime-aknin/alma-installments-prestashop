@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.x.x
+
+- WIP: Feature Share of Checkout
+
 ## v2.6.2
 
 - Fixed widget in version 2.8.0
