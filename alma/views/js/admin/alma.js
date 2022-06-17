@@ -56,9 +56,6 @@
                 action: 'ShareOfCheckout',
                 token: token
             }
-        })
-        .done(function (data) {})
-        .fail(function (data) {})
-        .always(function(){});
+        });
     })
 })(jQuery);
