@@ -45,5 +45,20 @@
                 }
             }
         }
+
+        $.ajax({
+            type: 'POST',
+            url: 'ajax-tab.php',
+            dataType: 'json',
+            data: {
+                ajax: true,
+                controller: 'AdminAlmaShareOfCheckout',
+                action: 'ShareOfCheckout',
+                token: token
+            }
+        })
+        .done(function (data) {})
+        .fail(function (data) {})
+        .always(function(){});
     })
 })(jQuery);
