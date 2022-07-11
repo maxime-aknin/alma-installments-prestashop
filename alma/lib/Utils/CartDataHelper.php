@@ -55,6 +55,7 @@ class CartDataHelper
         $this->cart = $cart;
         $this->context = $context;
         $this->feePlans = $feePlans;
+        $this->customer = $this->getCustomer();
     }
 
     public function eligibilityData()
@@ -84,9 +85,9 @@ class CartDataHelper
                 'return_url' => $this->context->link->getModuleLink('alma', 'validation'),
                 'ipn_callback_url' => $this->context->link->getModuleLink('alma', 'ipn'),
                 'shipping_address' => [
-                    'line1' => $this->getAddressByType('shipping')->address1,
-                    'postal_code' => $this->getAddressByType('shipping')->postcode,
-                    'city' => $this->getAddressByType('shipping')->city,
+                    'line1' => $this->getCartAddressByType('shipping')->address1,
+                    'postal_code' => $this->getCartAddressByType('shipping')->postcode,
+                    'city' => $this->getCartAddressByType('shipping')->city,
                     'country' => $this->getCountryAddressByType('shipping'),
                     'county_sublocality' => null,
                     'state_province' => $this->getStateProvince('shipping'),
@@ -94,9 +95,9 @@ class CartDataHelper
                 'shipping_info' => $this->getShippingData(),
                 'cart' => $this->getCartInfo(),
                 'billing_address' => [
-                    'line1' => $this->getAddressByType('billing')->address1,
-                    'postal_code' => $this->getAddressByType('billing')->postcode,
-                    'city' => $this->getAddressByType('billing')->city,
+                    'line1' => $this->getCartAddressByType('billing')->address1,
+                    'postal_code' => $this->getCartAddressByType('billing')->postcode,
+                    'city' => $this->getCartAddressByType('billing')->city,
                     'country' => $this->getCountryAddressByType('billing'),
                     'county_sublocality' => null,
                     'state_province' => $this->getStateProvince('billing'),
@@ -108,38 +109,86 @@ class CartDataHelper
                     'cart_totals_high_precision' => number_format($this->getPurchaseAmount(), 16),
                 ],
                 'locale' => $this->getLocale(),
-                'customer' => $this->getCustomerData(),
             ],
+            'customer' => $this->getCustomerData(),
         ];
     }
 
     private function getCustomerData()
     {
-        $customer = [
-            'first_name' => $this->getCustomer()->firstname,
-            'last_name' => $this->getCustomer()->lastname,
-            'email' => $this->getCustomer()->email,
-            'birth_date' => $this->getCustomer()->birthday,
-            'addresses' => [],
-            'phone' => null,
-            'country' => null,
+        return [
+            'first_name' => $this->customer->firstname,
+            'last_name' => $this->customer->lastname,
+            'email' => $this->customer->email,
+            'birth_date' => $this->getBirthday(),
+            'addresses' => $this->getAddressesData(),
+            'phone' => $this->getPhone(),
+            'country' => $this->getCountryAddressByType('billing'),
             'county_sublocality' => null,
-            'state_province' => null,
+            'state_province' => $this->getStateProvince('billing'),
         ];
+    }
 
-        if ($customer['birth_date'] == '0000-00-00') {
-            $customer['birth_date'] = null;
+    private function getBirthday()
+    {
+        $birthday = $this->customer->birthday;
+        if ($birthday == '0000-00-00') {
+            return null;
         }
 
-        $shippingAddress = $this->getAddressByType('shipping');
+        return $birthday;
+    }
+
+    private function getCustomerAddresses()
+    {
+        if (version_compare(_PS_VERSION_, '1.5.4.0', '<')) {
+            $idLang = $this->context->language->id;
+        } else {
+            $idLang = $this->customer->id_lang;
+        }
+        return $this->customer->getAddresses($idLang);
+    }
+
+    private function getAddressesData()
+    {
+        $addresses = [];
+        
+        foreach ($this->getCustomerAddresses() as $address) {
+            array_push($addresses, [
+                'line1' => $address['address1'],
+                'postal_code' => $address['postcode'],
+                'city' => $address['city'],
+                'country' => Country::getIsoById((int) $address['id_country']),
+                'county_sublocality' => null,
+                'state_province' => $address['state'],
+            ]);
+        }
+
+        return $addresses;
+    }
+
+    private function getPhone()
+    {
+        $phone = null;
+        $shippingAddress = $this->getCartAddressByType('shipping');
 
         if ($shippingAddress->phone) {
-            $customerData['phone'] = $shippingAddress->phone;
+            $phone = $shippingAddress->phone;
         } elseif ($shippingAddress->phone_mobile) {
-            $customerData['phone'] = $shippingAddress->phone_mobile;
+            $phone = $shippingAddress->phone_mobile;
         }
 
-        return $customer;
+        if (is_null($phone)) {
+            foreach ($this->getCustomerAddresses() as $address) {
+                if ($address['phone']) {
+                    $phone = $address['phone'];
+                } elseif ($address['phone_mobile']) {
+                    $phone = $address['phone_mobile'];
+                }
+            }
+        }
+
+        return $phone;
     }
 
     private function getCustomer()
@@ -172,9 +221,9 @@ class CartDataHelper
 
     private function getStateProvince($type)
     {
-        $idStateShipping = $this->getAddressByType($type)->id_state;
+        $idStateShipping = $this->getCartAddressByType($type)->id_state;
 
-        return $idStateShipping > 0 ? State::getNameById((int) $idStateShipping) : '';
+        return $idStateShipping > 0 ? State::getNameById((int) $idStateShipping) : null;
     }
     private function getLocale()
     {
@@ -187,7 +236,7 @@ class CartDataHelper
         return $locale;
     }
 
-    private function getAddressByType($type)
+    private function getCartAddressByType($type)
     {
         if ($type == 'shipping') {
             $address = new Address((int) $this->cart->id_address_delivery);
@@ -203,9 +252,9 @@ class CartDataHelper
         $countryAddress = '';
 
         if ($type == 'shipping') {
-            $countryAddress = Country::getIsoById((int) $this->getAddressByType('shipping')->id_country);
+            $countryAddress = Country::getIsoById((int) $this->getCartAddressByType('shipping')->id_country);
         } elseif ($type == 'billing') {
-            $countryAddress = Country::getIsoById((int) $this->getAddressByType('billing')->id_country);
+            $countryAddress = Country::getIsoById((int) $this->getCartAddressByType('billing')->id_country);
         }
 
         return $countryAddress;
