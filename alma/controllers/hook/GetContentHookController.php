@@ -499,8 +499,6 @@ final class GetContentHookController extends AdminHookController
             $fieldsForms[] = $refundBuilder->build();
             $fieldsForms[] = $triggerBuilder->build();
             $fieldsForms[] = $fragmentBuilder->build();
-            $fieldsForms[] = $triggerBuilder->build();
-            $fieldsForms[] = $fragmentBuilder->build();
         }
         $fieldsForms[] = $apiBuilder->build();
         $fieldsForms[] = $debugBuilder->build();
